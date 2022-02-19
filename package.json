@@ -1,0 +1,26 @@
+{
+  "name": "bettertickets",
+  "version": "1.0.0",
+  "description": "🎫 A discord bot for creating and handling support tickets in your own discord server, all for free no premium features!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Turtlepaw/bettertickets.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Turtlepaw/bettertickets/issues"
+  },
+  "homepage": "https://github.com/Turtlepaw/bettertickets#readme",
+  "dependencies": {
+    "discord.js": "^13.6.0",
+    "discord.js-util": "^4.2.0",
+    "discordjsh": "^3.1.2",
+    "uuid": "^8.3.2"
+  }
+}
