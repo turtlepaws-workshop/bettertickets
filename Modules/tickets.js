@@ -92,7 +92,11 @@ module.exports.guildSettings = class GuildSettings {
             },
             PingRoles: [],
             ManagerRoles: [],
-            CategoryId: null
+            CategoryId: null,
+            Remove: {
+                PingRoles: false,
+                Managers: false
+            }
         };
     }
 
@@ -106,13 +110,27 @@ module.exports.guildSettings = class GuildSettings {
         return this;
     }
 
-    addPingRole(Id) {
-        this.config.PingRoles.push(Id)
+    async removePingRole(Id){
+        this.config.Remove.PingRoles = true
+        const data = await this._fetch();
+        this.config.PingRoles = data.PingRoles.filter(e => e != (Id?.id != null ? Id.id : Id))
         return this;
     }
 
-    addManagerRole(Id) {
-        this.config.ManagerRoles.push(Id)
+    async removeManagerRole(Id){
+        this.config.Remove.Managers = true
+        const data = await this._fetch();
+        this.config.ManagerRoles = data.ManagerRoles.filter(e => e != (Id?.id != null ? Id.id : Id))
+        return this;
+    }
+
+    addPingRole(Ids) {
+        for(const id of Ids) this.config.PingRoles.push(id?.id != null ? id.id : id)
+        return this;
+    }
+
+    addManagerRole(Ids) {
+        for(const id of Ids) this.config.ManagerRoles.push(id?.id != null ? id.id : id)
         return this;
     }
 
@@ -154,6 +172,9 @@ module.exports.guildSettings = class GuildSettings {
     }
 
     async save() {
+        function notNull(val, embed){
+            return val != null;
+        }
         const fetched = await this._fetch();
 
         if (!fetched || (fetched == null)){
@@ -161,14 +182,26 @@ module.exports.guildSettings = class GuildSettings {
         }
 
         fetched.guildId = this.guildId;
-        fetched.categoryId = this.config.CategoryId;
-        fetched.Embed = {
-            description: this.config.Embed.Description,
-            title: this.config.Embed.Title,
-            color: this.config.Embed.Color
-        };
-        fetched.PingRoles = this.config.PingRoles;
-        fetched.ManagerRoles = this.config.ManagerRoles;
+        if(notNull(this.config.CategoryId)) fetched.categoryId = this.config.CategoryId;
+        if(notNull(this.config.Embed.Description)) fetched.Embed.description = this.config.Embed.Description;
+        if(notNull(this.config.Embed.Color)) fetched.Embed.color = this.config.Embed.Color;
+        if(notNull(this.config.Embed.Title)) fetched.Embed.title = this.config.Embed.Title;
+        if(fetched.PingRoles == null) fetched.PingRoles = [];
+        if(fetched.ManagerRoles == null) fetched.ManagerRoles = [];
+        if(!this.config.Remove.PingRoles) {
+            this.config.PingRoles.forEach(e => {
+                fetched.PingRoles.push(e);
+            });
+        } else {
+            fetched.PingRoles = this.config.PingRoles;
+        }
+        if(!this.config.Remove.Managers) {
+            this.config.ManagerRoles.forEach(e => {
+                fetched.ManagerRoles.push(e);
+            });
+        } else {
+            fetched.ManagerRoles = this.config.ManagerRoles;
+        }
 
         return (await fetched.save().catch(console.log));
     }
