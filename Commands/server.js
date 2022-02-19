@@ -331,9 +331,9 @@ module.exports = {
 
                 if(raw.content.startsWith(`r_`)){
                     const data = await GuildManager._fetch();
-                    const Role = data.ManagerRoles[Number(raw.content.slice(raw.content.indexOf("_")+1, raw.content.length))-1]
+                    const Role = data.PingRoles[Number(raw.content.slice(raw.content.indexOf("_")+1, raw.content.length))-1]
 
-                    await (await GuildManager.removeManagerRole(Role)).save();
+                    await (await GuildManager.removePingRole(Role)).save();
 
                     await int.editReply({
                         components: Rows,
