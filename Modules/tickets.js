@@ -460,6 +460,8 @@ module.exports.Log = class TicketLog {
 
         const Channel = await this.GuildSettings.getLogChannel(this.Member.guild);
 
+        if(!Channel) return;
+
         const Message = await Channel.send({
             embeds: embeded.build()
         });
