@@ -135,10 +135,6 @@ const helloMessageEmbed = module.exports.generateHelloMessage = async (Guild) =>
  * @returns {Promise<Boolean>}
  */
 module.exports.verifyPermissions = async (member, requiredPermission, replyTo) => {
-    function hasOrEquals(val, match) {
-        return (val == match || val.includes(match))
-    }
-
     const GuildManager = new this.guildSettings()
         .setGuildID(member.guild.id);
 
@@ -150,11 +146,13 @@ module.exports.verifyPermissions = async (member, requiredPermission, replyTo) =
     const managers = await GuildManager.getManagerRoles();
     /**@type {Role[]} */
     const ManagerRoles = [];
-    for (const Role of guild.roles.cache.values()) {
-        if (managers.includes(Role.id)) ManagerRoles.push(Role);
-    }
-    for (const Role of ManagerRoles) {
-        if (Role.members.has(member.user.id) && requiredPermission == "MANAGER") return true;
+    if(managers != null){
+        for (const Role of guild.roles.cache.values()) {
+            if (managers?.includes(Role.id)) ManagerRoles.push(Role);
+        }
+        for (const Role of ManagerRoles) {
+            if (Role.members.has(member.user.id) && requiredPermission == "MANAGER") return true;
+        }
     }
     if (member.permissions.has(requiredPermission)) return true;
     else {
