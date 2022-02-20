@@ -173,6 +173,7 @@ module.exports = {
                 });
 
                 client.on("modalSubmit", async m => {
+                    console.log("Modal:", m);
                     const Embeded = new MessageEmbed()
                     .setTitle(m.getTextInputValue(customIds.MODEL_TEXT.TITLE))
                     .setDescription(m.getTextInputValue(customIds.MODEL_TEXT.DESCRIPTION))
