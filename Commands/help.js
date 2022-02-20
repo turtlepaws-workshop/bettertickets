@@ -1,5 +1,6 @@
-const { CommandInteraction, Client } = require("discord.js");
+const { CommandInteraction, Client, MessageButton } = require("discord.js");
 const jsh = require("discordjsh");
+const { URL } = require("../Config/config");
 const Embed = require("../Util/Embed");
 
 module.exports = {
@@ -12,6 +13,27 @@ module.exports = {
      * @param {Client} client 
      */
     async execute(int, client){
-
+        await int.reply({
+            embeds: new Embed()
+            .setTitle(`Welcome to BetterTickets`)
+            .setDescription(`Hey there! Thanks for using BetterTickets, here's a quick tutorial on how to use BetterTickets!`)
+            .build(),
+            components: [
+                {
+                    type: 1,
+                    components: [
+                        new MessageButton()
+                        .setStyle("LINK")
+                        .setURL(URL.Website)
+                        .setLabel(`Learn More`),
+                        new MessageButton()
+                        .setStyle("LINK")
+                        .setURL(URL.Invite)
+                        .setLabel(`Add BetterTickets`)
+                    ]
+                }
+            ],
+            ephemeral: true
+        });
     }
 }

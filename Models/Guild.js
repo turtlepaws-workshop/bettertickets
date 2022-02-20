@@ -12,7 +12,15 @@ const schema = new mongoose.Schema({
         color: String
     },
     PingRoles: [String],
-    ManagerRoles: [String]
+    ManagerRoles: [String],
+    TicketPanels: [{
+        ID: String,
+        MessageID: String,
+        URL: String,
+        CustomIds: [String],
+        Deleted: Boolean,
+        Disabled: Boolean
+    }]
 });
 
 const Model = module.exports.Model = mongoose.model(`guilds`, schema)

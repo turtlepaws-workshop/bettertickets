@@ -44,7 +44,8 @@ const ClientBuilder = new JSH.Client({
     clientID
 })
 .setCommandsDir("./Commands")
-.setContextDir("./Menus");
+.setContextDir("./Menus")
+.setEventsDir("./Events");
 const whitelist = [];
 
 const client = ClientBuilder.create({
