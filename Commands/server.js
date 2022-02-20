@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const jsh = require("discordjsh");
 const { Reply, Stem } = require("../Config/config");
 const { Model } = require("../Models/Guild");
-const { guildSettings } = require("../Modules/tickets");
+const { guildSettings, verifyPermissions } = require("../Modules/tickets");
 const Embed = require("../Util/Embed");
 const CustomIds = {
     "CANCEL": "SERVER_CANCEL",
@@ -97,6 +97,9 @@ module.exports = {
      * @param {Client} client 
      */
     async execute(int, client) {
+        const check = await verifyPermissions(int.member, ["ADMINISTRATOR"], int);
+        if(!check) return;
+
         /**
          * @type {Discord.MessageButtonStyle}
          */

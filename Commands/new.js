@@ -1,11 +1,12 @@
 const { CommandInteraction, Client, MessageButton, MessageEmbed, MessageSelectMenu } = require("discord.js");
 const jsh = require("discordjsh");
 const { v4 } = require("uuid");
-const { guildSettings } = require("../Modules/tickets");
+const { guildSettings, verifyPermissions } = require("../Modules/tickets");
 const Embed = require("../Util/Embed");
 const { Modal, showModal, TextInputComponent } = require('discord-modals');
 const { Color } = require("../Config/config");
 const { ColorMenu } = require("./server");
+const ModalSubmitInteraction = require("discord-modals/src/structures/ModalSubmitInteraction");
 
 module.exports = {
     data: new jsh.commandBuilder()
@@ -26,6 +27,9 @@ module.exports = {
      * @param {Client} client 
      */
     async execute(int, client){
+        const check = await verifyPermissions(int.member, ["MANAGER"], int);
+        if(!check) return;
+
         const subcmd = int.options.getSubcommand();
         const subcmds = {
             "LIST": "list",
@@ -34,7 +38,7 @@ module.exports = {
         const customIds = {
             "DEFAULTS": "PANEL_SET_DEFUALTS",
             "CREATE": "PANEL_BUTTONS_CREATE",
-            "MODAL": "MODAL_EMBED",
+            "MODAL": "MODAL_EMBED_" + v4(),
             "MODEL_TEXT": {
                 "TITLE": "MODAL_EMBED_TITLE",
                 "DESCRIPTION": "MODAL_EMBED_DESCRIPTION",
@@ -77,13 +81,13 @@ module.exports = {
                 const GuildManager = new guildSettings()
                 .setGuildID(int.guild.id);
     
-                const ButtonSelected = async () => {
+                const ButtonSelected = async (i) => {
                     const Channel = int.options.getChannel(`channel`);
                     const CleanedChannel = !Channel.isText() ? int.channel : Channel;
                     const Panel = await GuildManager.addTicketPanel(CleanedChannel, TicketButtons, embed);
                     await Panel.this.save();
     
-                    await int.editReply({
+                    await i.update({
                         embeds: new Embed()
                         .setTitle(`Ticket Panel Created`)
                         .setDescription(`A ticket panel has been created in ${CleanedChannel}!`)
@@ -132,9 +136,9 @@ module.exports = {
                             .setCustomId(v4())
                         );
     
-                        await ButtonSelected();
+                        await ButtonSelected(i);
                     }else if(i.isButton() && (i.customId == customIds.CREATE)){
-                        await ButtonSelected();
+                        await ButtonSelected(i);
                     }
                 });
             }
@@ -172,7 +176,14 @@ module.exports = {
                     interaction: ii
                 });
 
-                client.on("modalSubmit", async m => {
+                client.on("modalSubmit", 
+                /**
+                 * 
+                 * @param {ModalSubmitInteraction} m 
+                 */
+                async m => {
+                    if(m.customId != customIds.MODAL) return;
+                    
                     const Embeded = new MessageEmbed()
                     .setTitle(m.getTextInputValue(customIds.MODEL_TEXT.TITLE))
                     .setDescription(m.getTextInputValue(customIds.MODEL_TEXT.DESCRIPTION))

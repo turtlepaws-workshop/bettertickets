@@ -20,8 +20,9 @@ module.exports.scopes = ["bot", "applications.commands"];
  */
 module.exports.permissions = ["SEND_MESSAGES", "SEND_MESSAGES_IN_THREADS", "MANAGE_ROLES", "MANAGE_CHANNELS", "EMBED_LINKS", "ATTACH_FILES", "READ_MESSAGE_HISTORY", "USE_EXTERNAL_EMOJIS", "USE_EXTERNAL_STICKERS", "VIEW_CHANNEL"];
 module.exports.URL = {
-    Invite: this.InviteURL,
-    Website: WebsiteURL
+    Invite: "https://discord.com/api/oauth2/authorize?client_id=943712375176065064&permissions=412585675793&scope=applications.commands%20bot",
+    Website: WebsiteURL,
+    Support: "https://discord.gg/76xpbUtKTS"
 };
 
 //No need to edit this (I think..)

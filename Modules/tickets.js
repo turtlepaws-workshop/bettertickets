@@ -1,8 +1,10 @@
-const { GuildMember, PermissionOverwrites, MessageEmbed, TextChannel, MessageButton, ButtonInteraction } = require("discord.js");
+const { GuildMember, PermissionOverwrites, MessageEmbed, TextChannel, MessageButton, ButtonInteraction, Role } = require("discord.js");
+const djs = require("discord.js");
 const { Model } = require("../Models/Ticket");
 const { Model: GuildModel } = require("../Models/Guild");
 const { v4: uuid } = require("uuid");
 const { Color } = require("../Config/config");
+const Embed = require("../Util/Embed");
 
 module.exports.defaultIds = {
     "CLOSE": "CLOSE_TICKET"
@@ -116,9 +118,48 @@ const helloMessageEmbed = module.exports.generateHelloMessage = async (Guild) =>
         .setTitle(Guild?.Embed?.title || `Hey there!`)
         .setDescription(Guild?.Embed?.description || `Thank you for contacting support today, how can we help?`);
 }
+/**
+ * Checks if the user has Discord permissions or manager permissions.
+ * @param {GuildMember} member 
+ * @param {Array<djs.PermissionString|"MANAGER">} requiredPermission
+ * @param {djs.Interaction}
+ * @returns {Promise<Boolean>}
+ */
+module.exports.verifyPermissions = async (member, requiredPermission, replyTo) => {
+    function hasOrEquals(val, match){
+        return (val == match || val.includes(match))
+    }
 
-module.exports.recordMessage
-module.exports.setGuildSettings
+    const GuildManager = new this.guildSettings()
+    .setGuildID(member.guild.id);
+
+    const {
+        guild,
+        client
+    } = member;
+
+    const managers = await GuildManager.getManagerRoles();
+    /**@type {Role[]} */
+    const ManagerRoles = [];
+    for(const Role of guild.roles.cache.values()) {
+        if(managers.includes(Role.id)) ManagerRoles.push(Role);
+    }
+    for(const Role of ManagerRoles){
+        if(Role.members.has(member.user.id) && requiredPermission == "MANAGER") return true;
+    }
+    if(member.permissions.has(requiredPermission)) return true;
+    else {
+        replyTo.reply({
+            embeds: new Embed()
+            .setTitle(`Invalid Permissions!`)
+            .setDescription(`You are required to have the \`${requiredPermission}\` permission to execute this command!`)
+            .build(),
+            ephemeral: true
+        }).catch(( )=>{ });
+
+        return false;
+    }
+}
 
 module.exports.guildSettings = class GuildSettings {
     constructor() {
