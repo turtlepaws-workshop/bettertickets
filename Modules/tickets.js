@@ -73,10 +73,13 @@ module.exports.create = async (member, int) => {
     }
 
     const PingRoless = await GuildSettings.getPingRoles();
+    const ButtonClicked = int.message.components[0].components.find(e => e.customId == int.customId);
+
     const Message = await Channel.send({
         content: PingRoless.map(e => `<@&${e}>`).join(" "),
         embeds: [
-            await this.generateHelloMessage(GuildSettings)
+            (await this.generateHelloMessage(GuildSettings))
+            .addField(`Reason`, `\`${ButtonClicked.label}\``)
         ],
         components: [
             {
