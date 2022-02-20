@@ -197,7 +197,7 @@ module.exports.guildSettings = class GuildSettings {
      */
     async getManagerRoles() {
         const d = await this._fetch();
-        return d.ManagerRoles;
+        return d?.ManagerRoles;
     }
 
     /**
@@ -205,7 +205,7 @@ module.exports.guildSettings = class GuildSettings {
      */
     async getPingRoles() {
         const d = await this._fetch();
-        return d.PingRoles;
+        return d?.PingRoles;
     }
 
     /**
@@ -214,7 +214,7 @@ module.exports.guildSettings = class GuildSettings {
      */
     async getLogChannel(guild=null) {
         const d = await this._fetch();
-        return (guild == null ? d.LogChannel : guild.channels.cache.get(d.LogChannel));
+        return (guild == null ? d?.LogChannel : guild.channels.cache.get(d?.LogChannel));
     }
 
     setGuildID(Id) {
