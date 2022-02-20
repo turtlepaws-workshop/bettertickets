@@ -9,6 +9,7 @@ const Config = require("./Config/config");
 const Embed = require("./Util/Embed");
 const { Emojis } = require("./Util/EmojiManager");
 const mongoose = require("mongoose");
+const discordModals = require('discord-modals');
 const {
     TestGuildID: testGuildID,
     Color
@@ -57,6 +58,8 @@ const client = ClientBuilder.create({
         "MESSAGE"
     ]
 });
+
+discordModals(client);
 
 client.Color = Color;
 client.Config = Config;

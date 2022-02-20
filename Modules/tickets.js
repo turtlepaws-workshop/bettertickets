@@ -211,12 +211,12 @@ module.exports.guildSettings = class GuildSettings {
      * @param {TextChannel} Channel 
      * @param {MessageButton[]} Buttons 
      */
-    async addTicketPanel(Channel, Buttons) {
+    async addTicketPanel(Channel, Buttons, embed) {
         const data = await this._fetch();
         const Embeded = await helloMessageEmbed(data);
 
         const Message = await Channel.send({
-            embeds: [Embeded],
+            embeds: embed,
             components: [
                 {
                     type: 1,

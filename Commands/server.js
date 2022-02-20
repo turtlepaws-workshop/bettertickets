@@ -5,8 +5,89 @@ const { Reply, Stem } = require("../Config/config");
 const { Model } = require("../Models/Guild");
 const { guildSettings } = require("../Modules/tickets");
 const Embed = require("../Util/Embed");
+const CustomIds = {
+    "CANCEL": "SERVER_CANCEL",
+    "CATEGORY": "SERVER_SET_CATEGORY",
+    "EMBED_COLOR": "SERVER_SET_EMBED_COLOR",
+    "EMBED_TITLE": "SERVER_SET_EMBED_TITLE",
+    "EMBED_DESCRIPTION": "SERVER_SET_EMBED_DESCRIPTION",
+    "PING_ROLES": "SERVER_SET_PING_ROLES",
+    "MANAGER_ROLES": "SERVER_SET_MANAGER_ROLES",
+    "COLOR_MENU": "SERVER_COLOR_MENU"
+};
+
+const ColorMenuNotRow = new Discord.MessageSelectMenu()
+.setCustomId(CustomIds.COLOR_MENU)
+.setPlaceholder(`Select a color`)
+.addOptions(
+    {
+        label: 'Black',
+        value: 'DEFAULT',
+    },
+    {
+        label: 'White',
+        value: 'WHITE',
+    },
+    {
+        label: 'Aqua',
+        value: 'AQUA',
+    },
+    {
+        label: 'Green',
+        value: 'GREEN'
+    },
+    {
+        label: 'Blue',
+        value: 'BLUE',
+    },
+    {
+        label: 'Yellow',
+        value: 'YELLOW'
+    },
+    {
+        label: 'Purple',
+        value: 'PURPLE'
+    },
+    {
+        label: 'Vivid Pink',
+        value: 'LUMINOUS_VIVID_PINK'
+    },
+    {
+        label: 'Fuchsia',
+        value: 'FUCHSIA'
+    },
+    {
+        label: 'Gold',
+        value: 'GOLD'
+    },
+    {
+        label: 'Orange',
+        value: 'ORANGE'
+    },
+    {
+        label: 'Red',
+        value: 'RED'
+    },
+    {
+        label: 'Grey',
+        value: 'GREY'
+    },
+    {
+        label: 'Darker Grey',
+        value: 'DARKER_GREY'
+    },
+    {
+        label: 'Navy',
+        value: 'NAVY'
+    },
+    {
+        label: "Blurple",
+        value: "BLURPLE"
+    }
+);
 
 module.exports = {
+    ColorMenu: ColorMenuNotRow,
     data: new jsh.commandBuilder()
         .setName(`server`)
         .setDescription(`Change the servers settings.`),
@@ -16,16 +97,6 @@ module.exports = {
      * @param {Client} client 
      */
     async execute(int, client) {
-        const CustomIds = {
-            "CANCEL": "SERVER_CANCEL",
-            "CATEGORY": "SERVER_SET_CATEGORY",
-            "EMBED_COLOR": "SERVER_SET_EMBED_COLOR",
-            "EMBED_TITLE": "SERVER_SET_EMBED_TITLE",
-            "EMBED_DESCRIPTION": "SERVER_SET_EMBED_DESCRIPTION",
-            "PING_ROLES": "SERVER_SET_PING_ROLES",
-            "MANAGER_ROLES": "SERVER_SET_MANAGER_ROLES",
-            "COLOR_MENU": "SERVER_COLOR_MENU"
-        };
         /**
          * @type {Discord.MessageButtonStyle}
          */
@@ -119,77 +190,10 @@ module.exports = {
             RowCancel1,
             RowCancel2
         ];
+
         const ColorMenu = new Discord.MessageActionRow()
             .addComponents(
-                new Discord.MessageSelectMenu()
-                    .setCustomId(CustomIds.COLOR_MENU)
-                    .setPlaceholder(`Select a color`)
-                    .addOptions(
-                        {
-                            label: 'Black',
-                            value: 'DEFAULT',
-                        },
-                        {
-                            label: 'White',
-                            value: 'WHITE',
-                        },
-                        {
-                            label: 'Aqua',
-                            value: 'AQUA',
-                        },
-                        {
-                            label: 'Green',
-                            value: 'GREEN'
-                        },
-                        {
-                            label: 'Blue',
-                            value: 'BLUE',
-                        },
-                        {
-                            label: 'Yellow',
-                            value: 'YELLOW'
-                        },
-                        {
-                            label: 'Purple',
-                            value: 'PURPLE'
-                        },
-                        {
-                            label: 'Vivid Pink',
-                            value: 'LUMINOUS_VIVID_PINK'
-                        },
-                        {
-                            label: 'Fuchsia',
-                            value: 'FUCHSIA'
-                        },
-                        {
-                            label: 'Gold',
-                            value: 'GOLD'
-                        },
-                        {
-                            label: 'Orange',
-                            value: 'ORANGE'
-                        },
-                        {
-                            label: 'Red',
-                            value: 'RED'
-                        },
-                        {
-                            label: 'Grey',
-                            value: 'GREY'
-                        },
-                        {
-                            label: 'Darker Grey',
-                            value: 'DARKER_GREY'
-                        },
-                        {
-                            label: 'Navy',
-                            value: 'NAVY'
-                        },
-                        {
-                            label: "Blurple",
-                            value: "BLURPLE"
-                        }
-                    )
+                ColorMenuNotRow
             )
 
         const generateData = async () => {

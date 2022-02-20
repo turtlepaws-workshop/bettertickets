@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Turtlepaw/bettertickets#readme",
   "dependencies": {
+    "discord-modals": "^1.1.8",
     "discord.js": "^13.6.0",
     "discord.js-util": "^4.2.0",
     "discordjsh": "^3.1.2",
