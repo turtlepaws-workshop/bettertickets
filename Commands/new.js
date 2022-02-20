@@ -183,6 +183,7 @@ module.exports = {
                  */
                 async m => {
                     if(m.customId != customIds.MODAL) return;
+                    console.log(`📜 Modal:`, m);
                     
                     const Embeded = new MessageEmbed()
                     .setTitle(m.getTextInputValue(customIds.MODEL_TEXT.TITLE))
