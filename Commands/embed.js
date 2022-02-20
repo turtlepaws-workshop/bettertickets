@@ -4,7 +4,6 @@ const { URL } = require("../Config/config");
 const Embed = require("../Util/Embed");
 
 module.exports = {
-    devOnly: true,
     data: new jsh.commandBuilder()
     .setName(`embed`)
     .setDescription(`Create an embed for the ticket panel.`),

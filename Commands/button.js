@@ -4,7 +4,6 @@ const { URL } = require("../Config/config");
 const Embed = require("../Util/Embed");
 
 module.exports = {
-    devOnly: true,
     data: new jsh.commandBuilder()
     .setName(`button`)
     .setDescription(`Create a new button when using a ticket panel.`)

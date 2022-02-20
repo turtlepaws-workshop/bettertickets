@@ -8,7 +8,6 @@ const { Color } = require("../Config/config");
 const { ColorMenu } = require("./server");
 
 module.exports = {
-    devOnly: true,
     data: new jsh.commandBuilder()
     .setName(`panel`)
     .setDescription(`Manage your panels.`)
