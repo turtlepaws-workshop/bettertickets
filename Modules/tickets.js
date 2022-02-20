@@ -5,6 +5,7 @@ const { Model: GuildModel } = require("../Models/Guild");
 const { v4: uuid } = require("uuid");
 const { Color } = require("../Config/config");
 const Embed = require("../Util/Embed");
+const { timestamp } = require("discord.js-util");
 
 module.exports.defaultIds = {
     "CLOSE": "CLOSE_TICKET"
@@ -20,7 +21,7 @@ module.exports.create = async (member, int) => {
         guildId: member.guild.id
     });
     const GuildSettings = new this.guildSettings()
-    .setGuildID(member.guild.id);
+        .setGuildID(member.guild.id);
 
     const permissionOverwrites = [
         {
@@ -31,7 +32,7 @@ module.exports.create = async (member, int) => {
             id: member.id,
             allow: ["VIEW_CHANNEL"]
         },
-       
+
     ];
 
     await (await GuildSettings.getManagerRoles()).map(e => {
@@ -64,13 +65,13 @@ module.exports.create = async (member, int) => {
         open: true
     }).save().catch(console.log);
 
-    if(int){
+    if (int) {
         int.reply({
             ephemeral: true,
             content: `Created a ticket in ${Channel}`
         });
     }
-    
+
     const PingRoless = await GuildSettings.getPingRoles();
     const Message = await Channel.send({
         content: PingRoless.map(e => `<@&${e}>`).join(" "),
@@ -82,9 +83,9 @@ module.exports.create = async (member, int) => {
                 type: 1,
                 components: [
                     new MessageButton()
-                    .setLabel(`Close`)
-                    .setStyle("DANGER")
-                    .setCustomId(`TICKET_CLOSE`),
+                        .setLabel(`Close`)
+                        .setStyle("DANGER")
+                        .setCustomId(`TICKET_CLOSE`),
                 ]
             }
         ]
@@ -109,10 +110,15 @@ module.exports.close = async (ChannelID, i) => {
     Ticket.save().catch(console.log);
 
     await i.channel.delete();
+
+    const LogManager = new this.Log(Ticket)
+    .setGuildID(i.guild.id);
+    await LogManager.autoSetData(i.member);
+    return await LogManager.LogIt();
 };
 
 const helloMessageEmbed = module.exports.generateHelloMessage = async (Guild) => {
-    if(Guild?._fetch != null) Guild = await Guild._fetch();
+    if (Guild?._fetch != null) Guild = await Guild._fetch();
     return new MessageEmbed()
         .setColor(Guild?.Embed?.color || Color)
         .setTitle(Guild?.Embed?.title || `Hey there!`)
@@ -126,12 +132,12 @@ const helloMessageEmbed = module.exports.generateHelloMessage = async (Guild) =>
  * @returns {Promise<Boolean>}
  */
 module.exports.verifyPermissions = async (member, requiredPermission, replyTo) => {
-    function hasOrEquals(val, match){
+    function hasOrEquals(val, match) {
         return (val == match || val.includes(match))
     }
 
     const GuildManager = new this.guildSettings()
-    .setGuildID(member.guild.id);
+        .setGuildID(member.guild.id);
 
     const {
         guild,
@@ -141,25 +147,27 @@ module.exports.verifyPermissions = async (member, requiredPermission, replyTo) =
     const managers = await GuildManager.getManagerRoles();
     /**@type {Role[]} */
     const ManagerRoles = [];
-    for(const Role of guild.roles.cache.values()) {
-        if(managers.includes(Role.id)) ManagerRoles.push(Role);
+    for (const Role of guild.roles.cache.values()) {
+        if (managers.includes(Role.id)) ManagerRoles.push(Role);
     }
-    for(const Role of ManagerRoles){
-        if(Role.members.has(member.user.id) && requiredPermission == "MANAGER") return true;
+    for (const Role of ManagerRoles) {
+        if (Role.members.has(member.user.id) && requiredPermission == "MANAGER") return true;
     }
-    if(member.permissions.has(requiredPermission)) return true;
+    if (member.permissions.has(requiredPermission)) return true;
     else {
         replyTo.reply({
             embeds: new Embed()
-            .setTitle(`Invalid Permissions!`)
-            .setDescription(`You are required to have the \`${requiredPermission}\` permission to execute this command!`)
-            .build(),
+                .setTitle(`Invalid Permissions!`)
+                .setDescription(`You are required to have the \`${requiredPermission}\` permission to execute this command!`)
+                .build(),
             ephemeral: true
-        }).catch(( )=>{ });
+        }).catch(() => { });
 
         return false;
     }
 }
+
+const thiss = this;
 
 module.exports.guildSettings = class GuildSettings {
     constructor() {
@@ -178,14 +186,15 @@ module.exports.guildSettings = class GuildSettings {
                 PingRoles: false,
                 Managers: false
             },
-            TicketPanels: []
+            TicketPanels: [],
+            LogChannel: null
         };
     }
 
     /**
      * @returns {Promise<String[]>}
      */
-    async getManagerRoles(){
+    async getManagerRoles() {
         const d = await this._fetch();
         return d.ManagerRoles;
     }
@@ -193,9 +202,18 @@ module.exports.guildSettings = class GuildSettings {
     /**
      * @returns {Promise<String[]>}
      */
-    async getPingRoles(){
+    async getPingRoles() {
         const d = await this._fetch();
         return d.PingRoles;
+    }
+
+    /**
+     * @param {djs.Guild} guild
+     * @returns {Promise<TextChannel>}
+     */
+    async getLogChannel(guild=null) {
+        const d = await this._fetch();
+        return (guild == null ? d.LogChannel : guild.channels.cache.get(d.LogChannel));
     }
 
     setGuildID(Id) {
@@ -244,6 +262,11 @@ module.exports.guildSettings = class GuildSettings {
 
     setEmbedColor(color) {
         this.config.Embed.Color = color
+        return this;
+    }
+
+    setLogChannel(channelId) {
+        this.config.LogChannel = channelId?.id != null ? channelId.id : channelId
         return this;
     }
 
@@ -318,6 +341,7 @@ module.exports.guildSettings = class GuildSettings {
         if (notNull(this.config.Embed.Description)) fetched.Embed.description = this.config.Embed.Description;
         if (notNull(this.config.Embed.Color)) fetched.Embed.color = this.config.Embed.Color;
         if (notNull(this.config.Embed.Title)) fetched.Embed.title = this.config.Embed.Title;
+        if (notNull(this.config.LogChannel)) fetched.LogChannel = this.config.LogChannel;
         if (fetched.PingRoles == null) fetched.PingRoles = [];
         if (fetched.ManagerRoles == null) fetched.ManagerRoles = [];
         if (!this.config.Remove.PingRoles) {
@@ -334,13 +358,113 @@ module.exports.guildSettings = class GuildSettings {
         } else {
             fetched.ManagerRoles = this.config.ManagerRoles;
         }
-        if(fetched.TicketPanels == null) fetched.TicketPanels = [];
-        if(this.config.TicketPanels.length >= 1){
+        if (fetched.TicketPanels == null) fetched.TicketPanels = [];
+        if (this.config.TicketPanels.length >= 1) {
             this.config.TicketPanels.forEach(e => {
                 fetched.TicketPanels.push(e);
             });
         }
 
         return (await fetched.save().catch(console.log));
+    }
+}
+
+module.exports.Log = class TicketLog {
+    constructor(modelTicket){
+        this.guildId = null;
+        this.GuildSettings = null;
+        this.Member = null;
+        this.TicketModel = modelTicket;
+
+        this.config = {
+            TicketId: null,
+            OpenedBy: null,
+            ClosedBy: null,
+            Reason: `No reason specified.`,
+            OpenTime: new timestamp(),
+            CloseTime: new timestamp()
+        };
+    }
+
+    setGuildID(Id){
+        this.guildId = Id
+        return this;
+    }
+
+    setTicketId(Id){
+        this.config.TicketId = Id
+        return this;
+    }
+
+    setOpenTime(time){
+        this.config.OpenTime.setTime(time)
+        return this;
+    }
+
+    setReason(text){
+        this.config.Reason = text
+        return this;
+    }
+
+    setClosedBy(user){
+        this.config.ClosedBy = user
+        return this;
+    }
+
+    setOpenedBy(user){
+        this.config.OpenedBy = user
+        return this;
+    }
+
+    setClosedTime(time){
+        this.config.CloseTime.setTime(time)
+        return this;
+    }
+
+    /**
+     * @param {GuildMember} memberClosed 
+     */
+    async autoSetData(memberClosed){
+        this.Member = memberClosed;
+        const GuildManager = this.GuildSettings = new thiss.guildSettings()
+        .setGuildID(memberClosed.guild.id);
+        const data = await GuildManager._fetch();
+        const AllTickets = await Model.find({
+            guildId: memberClosed.guild.id
+        });
+        const Ticket = this.TicketModel;
+        
+        return this.setClosedBy(memberClosed)
+        .setClosedTime(Date.now())
+        .setOpenTime(Ticket.dateCreated)
+        .setOpenedBy(`<@${Ticket.userId}>`)
+        .setTicketId(AllTickets.length-1)
+        .setGuildID(memberClosed.guild.id);
+    }
+
+    async LogIt(){
+        const {
+            config
+        } = this;
+        const embeded = new Embed()
+        .setTitle(`Ticket Closed`)
+        .addField(`Ticket ID`, `${config.TicketId}`, true)
+        .addField(`Opened By`, `${config.OpenedBy}`, true)
+        .addField(`Closed By`, `${config.ClosedBy}`, true)
+        .addField(`Reason`, `${config.Reason}`, true)
+        .addField(`Close Time`, `${config.CloseTime}`, true)
+        .addField(`Open Time`, `${config.OpenTime}`, true)
+
+        const Channel = await this.GuildSettings.getLogChannel(this.Member.guild);
+
+        const Message = await Channel.send({
+            embeds: embeded.build()
+        });
+
+        return {
+            Message,
+            Channel,
+            embeded
+        }
     }
 }

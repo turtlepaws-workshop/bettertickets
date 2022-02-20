@@ -20,7 +20,8 @@ const schema = new mongoose.Schema({
         CustomIds: [String],
         Deleted: Boolean,
         Disabled: Boolean
-    }]
+    }],
+    LogChannel: String
 });
 
 const Model = module.exports.Model = mongoose.model(`guilds`, schema)

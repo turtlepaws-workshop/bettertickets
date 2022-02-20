@@ -13,7 +13,8 @@ const CustomIds = {
     "EMBED_DESCRIPTION": "SERVER_SET_EMBED_DESCRIPTION",
     "PING_ROLES": "SERVER_SET_PING_ROLES",
     "MANAGER_ROLES": "SERVER_SET_MANAGER_ROLES",
-    "COLOR_MENU": "SERVER_COLOR_MENU"
+    "COLOR_MENU": "SERVER_COLOR_MENU",
+    "LOG_CHANNEL": "SERVER_SET_LOG_CHANNEL"
 };
 
 const ColorMenuNotRow = new Discord.MessageSelectMenu()
@@ -136,6 +137,10 @@ module.exports = {
             EmbedColor: new MessageButton()
                 .setCustomId(CustomIds.EMBED_COLOR)
                 .setLabel(`Set Embed Color`)
+                .setStyle(DefaultStyle),
+            LogChannel: new MessageButton()
+                .setCustomId(CustomIds.LOG_CHANNEL)
+                .setLabel(`Set Log Channel`)
                 .setStyle(DefaultStyle)
         };
         const Rows = [
@@ -150,6 +155,7 @@ module.exports = {
             new Discord.MessageActionRow()
                 .setComponents(
                     Buttons.EmbedColor,
+                    Buttons.LogChannel,
                     Buttons.Cancel
                 ),
         ];
@@ -166,6 +172,7 @@ module.exports = {
         const Selected2 = new Discord.MessageActionRow()
         .setComponents(
             new MessageButton(Buttons.EmbedColor).setDisabled(true),
+            new MessageButton(Buttons.LogChannel).setDisabled(true),
             new MessageButton(Buttons.Cancel).setStyle(DefaultSelected)
         );
 
@@ -186,6 +193,7 @@ module.exports = {
         const RowCancel2 = new Discord.MessageActionRow()
             .setComponents(
                 new MessageButton(Buttons.EmbedColor).setDisabled(true),
+                new MessageButton(Buttons.LogChannel).setDisabled(true),
                 new MessageButton(Buttons.Cancel).setDisabled(true)
             )
 
@@ -220,14 +228,15 @@ module.exports = {
                 "MANAGER": "Manager Roles",
                 "EMBED_COLOR": "Embed Color",
                 "EMBED_TITLE": "Embed Title",
-                "EMBED_DES": "Embed Description"
+                "EMBED_DES": "Embed Description",
+                "LOGS": "Log Channel"
             }
 
             //ManagerRoles
             //PingRoles
             return new Embed()
                 .setTitle(`Server Config`)
-                .setDescription(`${Stem} **Category:** ${data?.categoryId != null ? `<#${data.categoryId}>` : `${NoData(Is.CATEGORY)}`}\n${Stem} **Embed Title:** ${data?.Embed?.title || `${NoData(Is.CATEGORY)}`}\n${Stem} **Embed Description:** ${data?.Embed?.description || `${NoData(Is.EMBED_DES)}`}\n${Stem} **Embed Color:** ${data?.Embed?.color != null ? `\`${data.Embed.color}\`` : `${NoData(Is.EMBED_COLOR)}`}\n${Stem} **Ping Roles:** ${data?.PingRoles?.length >= 1 ? data.PingRoles.map(e => `<@&${e}>`).join(" ") : `${NoData(Is.PINGS)}`}\n${Reply} **Manager Roles:** ${data?.ManagerRoles?.length >= 1 ? data.ManagerRoles.map(e => `<@&${e}>`).join(" ") : `${NoData(Is.MANAGER)}`}`)
+                .setDescription(`${Stem} **Log Channel:** ${data?.LogChannel != null ? `<#${data.LogChannel}>` : `${NoData(Is.LOGS)}`}\n${Stem} **Category:** ${data?.categoryId != null ? `<#${data.categoryId}>` : `${NoData(Is.CATEGORY)}`}\n${Stem} **Embed Title:** ${data?.Embed?.title || `${NoData(Is.CATEGORY)}`}\n${Stem} **Embed Description:** ${data?.Embed?.description || `${NoData(Is.EMBED_DES)}`}\n${Stem} **Embed Color:** ${data?.Embed?.color != null ? `\`${data.Embed.color}\`` : `${NoData(Is.EMBED_COLOR)}`}\n${Stem} **Ping Roles:** ${data?.PingRoles?.length >= 1 ? data.PingRoles.map(e => `<@&${e}>`).join(" ") : `${NoData(Is.PINGS)}`}\n${Reply} **Manager Roles:** ${data?.ManagerRoles?.length >= 1 ? data.ManagerRoles.map(e => `<@&${e}>`).join(" ") : `${NoData(Is.MANAGER)}`}`)
                 .setFooter(notice)
                 .build();
         }
@@ -428,6 +437,27 @@ module.exports = {
                         embeds: await generateEmbed()
                     });
                 }
+            } else if(i.customId == CustomIds.LOG_CHANNEL){
+                await i.update({
+                    components: RowsSelected
+                });
+
+                const msgs = await int.channel.awaitMessages({
+                    max: 1,
+                    filter: i => i.author.id == int.user.id
+                });
+                const rawText = msgs.first();
+                const Channel = rawText.mentions.channels.first() || int.guild.channels.cache.get(rawText.content) || int.guild.channels.cache.find(e => e.name == rawText.content);
+                let CleanedChannel = !Channel.isText() ? int.channel : Channel;
+                if(rawText.content.toLowerCase().startsWith(`none`)) CleanedChannel = null;
+
+                await GuildManager.setLogChannel(CleanedChannel)
+                    .save();
+
+                await int.editReply({
+                    components: Rows,
+                    embeds: await generateEmbed()
+                });
             }
         });
     }
