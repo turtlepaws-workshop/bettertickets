@@ -175,6 +175,7 @@ module.exports = {
                     client,
                     interaction: ii
                 });
+                let done = false;
 
                 client.on("modalSubmit", 
                 /**
@@ -182,8 +183,10 @@ module.exports = {
                  * @param {ModalSubmitInteraction} m 
                  */
                 async m => {
+                    if(done) return;
                     if(m.customId != customIds.MODAL) return;
                     console.log(`📜 Modal:`, m);
+                    done = true;
                     
                     const Embeded = new MessageEmbed()
                     .setTitle(m.getTextInputValue(customIds.MODEL_TEXT.TITLE))
