@@ -68,6 +68,18 @@ client.on("ready", async () => {
     setTimeout(async () => {
         await require("./Util/EmojiManager")(client);
     }, 4000);
+
+    setInterval(async () => {
+        await client.user.setPresence({
+            activities: [
+                {
+                    name: `Tickets in ${(await client.guilds.fetch()).size} servers`,
+                    type: "WATCHING",
+                    url: Config.URL.Website
+                }
+            ]
+        });
+    }, 4000);
 });
 
 client.on("guildCreate", async guild => {
@@ -91,8 +103,8 @@ client.on("guildCreate", async guild => {
 
     await owner.send({
         embeds: new Embed()
-        .setTitle(`${Emojis.add_dc.show} | New server`)
-        .setDescription(`I was added to \`${guild.name}\`\n\n**${Emojis.bot_2_dc.show} Raw:**\n\n\`\`\`\nxl\n${clean(evaled)}\n\`\`\``)
+        .setTitle(`New server`)
+        .setDescription(`I was added to \`${guild.name}\`\n\n**Raw:**\n\n\`\`\`\nxl\n${clean(evaled)}\n\`\`\``)
         .build(),
         components: [
             {
@@ -100,7 +112,6 @@ client.on("guildCreate", async guild => {
                 components: [
                     new Discord.MessageButton()
                     .setLabel(`Leave guild`)
-                    .setEmoji(Emojis.leave_dc.show)
                     .setCustomId(`leaveguild_${guild.id}`)
                     .setStyle("SECONDARY")
                 ]
@@ -124,3 +135,5 @@ client.on("interactionCreate", async i => {
         i.reply(`Left guild!`)
     }
 });
+
+module.exports.getClient = () => client;

@@ -187,9 +187,20 @@ module.exports.guildSettings = class GuildSettings {
                 PingRoles: false,
                 Managers: false
             },
+            Add: {
+                PingRoles: false,
+                Managers: false
+            },
             TicketPanels: [],
             LogChannel: null
         };
+    }
+
+    async initFetchRoles(){
+        const GuildThing = await this._fetch();
+
+        if(GuildThing.PingRoles?.length >= 1 && GuildThing.PingRoles != null) this.config.PingRoles = GuildThing.PingRoles;
+        if(GuildThing.ManagerRoles?.length >= 1 && GuildThing.ManagerRoles != null) this.config.ManagerRoles = GuildThing.ManagerRoles;
     }
 
     /**
@@ -219,6 +230,7 @@ module.exports.guildSettings = class GuildSettings {
 
     setGuildID(Id) {
         this.guildId = Id
+        this.initFetchRoles();
         return this;
     }
 
@@ -242,12 +254,22 @@ module.exports.guildSettings = class GuildSettings {
     }
 
     addPingRole(Ids) {
-        for (const id of Ids) this.config.PingRoles.push(id?.id != null ? id.id : id)
+        this.config.Add.PingRoles = true
+        for (const id of Ids) {
+            const Id = id?.id != null ? id.id : id;
+            if(this.config.PingRoles.includes(Id)) continue;
+            this.config.PingRoles.push(Id);
+        }
         return this;
     }
 
     addManagerRole(Ids) {
-        for (const id of Ids) this.config.ManagerRoles.push(id?.id != null ? id.id : id)
+        this.config.Add.Managers = true
+        for (const id of Ids) {
+            const Id = id?.id != null ? id.id : id;
+            if(this.config.ManagerRoles.includes(Id)) continue;
+            this.config.ManagerRoles.push(id?.id != null ? id.id : id)
+        }
         return this;
     }
 
@@ -327,6 +349,13 @@ module.exports.guildSettings = class GuildSettings {
         return ModelCreated;
     }
 
+    debugReset(){
+        this.config.Remove.Managers = false;
+        this.config.Remove.PingRoles = false;
+        this.config.Add.Managers = false;
+        this.config.Add.PingRoles = false;
+    }
+
     async save() {
         function notNull(val, embed) {
             return val != null;
@@ -345,18 +374,18 @@ module.exports.guildSettings = class GuildSettings {
         if (notNull(this.config.LogChannel)) fetched.LogChannel = this.config.LogChannel;
         if (fetched.PingRoles == null) fetched.PingRoles = [];
         if (fetched.ManagerRoles == null) fetched.ManagerRoles = [];
-        if (!this.config.Remove.PingRoles) {
+        if (!this.config.Remove.PingRoles && this.config.Add.PingRoles) {
             this.config.PingRoles.forEach(e => {
                 fetched.PingRoles.push(e);
             });
-        } else {
+        } else if(this.config.Remove.PingRoles) {
             fetched.PingRoles = this.config.PingRoles;
         }
-        if (!this.config.Remove.Managers) {
+        if (!this.config.Remove.Managers && this.config.Add.Managers) {
             this.config.ManagerRoles.forEach(e => {
                 fetched.ManagerRoles.push(e);
             });
-        } else {
+        } else if(this.config.Remove.Managers) {
             fetched.ManagerRoles = this.config.ManagerRoles;
         }
         if (fetched.TicketPanels == null) fetched.TicketPanels = [];
@@ -365,6 +394,8 @@ module.exports.guildSettings = class GuildSettings {
                 fetched.TicketPanels.push(e);
             });
         }
+
+        this.debugReset();
 
         return (await fetched.save().catch(console.log));
     }
@@ -447,6 +478,19 @@ module.exports.Log = class TicketLog {
         const {
             config
         } = this;
+        function toId(val){
+            val = val.toString();
+
+            return val.replace(`<`, "")
+            .replace("@", "")
+            .replace(">", "");
+        }
+
+        const client = require("../index").getClient();
+
+        const usr = await client.users.fetch(toId(config.OpenedBy));
+        const usr2 = await client.users.fetch(toId(config.ClosedBy));
+
         const embeded = new Embed()
         .setTitle(`Ticket Closed`)
         .addField(`Ticket ID`, `${config.TicketId}`, true)
@@ -455,6 +499,13 @@ module.exports.Log = class TicketLog {
         .addField(`Reason`, `${config.Reason}`, true)
         .addField(`Close Time`, `${config.CloseTime}`, true)
         .addField(`Open Time`, `${config.OpenTime}`, true)
+        .setAuthor({
+            name: `By ${usr.username}`,
+            iconURL: usr.displayAvatarURL()
+        })
+        .setFooter({
+            text: `Close: ${usr2.id} • Open: ${usr.id}`
+        });
 
         const Channel = await this.GuildSettings.getLogChannel(this.Member.guild);
 
