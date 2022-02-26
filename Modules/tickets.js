@@ -294,6 +294,15 @@ module.exports.guildSettings = class GuildSettings {
     }
 
     /**
+     * Fetch's all the guilds ticket panels.
+     */
+    async fetchAllTicketPanels(){
+        const all = await this._fetch();
+
+        return all.TicketPanels;
+    }
+
+    /**
      * Creates a ticket panel.
      * @param {TextChannel} Channel 
      * @param {MessageButton[]} Buttons 

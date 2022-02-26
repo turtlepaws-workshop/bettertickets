@@ -7,6 +7,8 @@ const { Modal, showModal, TextInputComponent } = require('discord-modals');
 const { Color } = require("../Config/config");
 const { ColorMenu } = require("./server");
 const ModalSubmitInteraction = require("discord-modals/src/structures/ModalSubmitInteraction");
+const { pages: Pages, splitPages } = require("discord.js-util");
+const { Reply, Stem } = require("../Config/config");
 
 module.exports = {
     data: new jsh.commandBuilder()
@@ -207,7 +209,23 @@ module.exports = {
             });
 
         } else if(subcmd == subcmds.LIST){
-            
+            const GuildManager = new guildSettings()
+            .setGuildID(int.guild.id);
+            const Panels = await GuildManager.fetchAllTicketPanels();
+
+            const Pages2 = await splitPages(Panels, async (panel) => {
+                const RawChannel = panel.URL.slice(48, panel.URL.length-19);
+                const Channel = int.guild.channels.cache.get(RawChannel);
+
+                return `**${Stem} Channel:** ${Channel || "Unknown Channel"}\n**${Reply} Message Link:** [click here](${panel.URL})\n\n`
+            });
+
+            await new Pages()
+            .setInteraction(int)
+            .setFilter(i => i.user.id == int.user.id)
+            .setPages(Pages2.toEmbeds().map(e => e.setColor(Color)))
+            .setEmojis(`<:leave:863464329633726464>`, `<:join:863464329613672508>`)
+            .send();
         }
     }
 }
