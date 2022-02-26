@@ -36,8 +36,8 @@ module.exports = {
             "CREATE": "create"
         };
         const customIds = {
-            "DEFAULTS": "PANEL_SET_DEFUALTS",
-            "CREATE": "PANEL_BUTTONS_CREATE",
+            "DEFAULTS": "PANEL_SET_DEFUALTS" + v4(),
+            "CREATE": "PANEL_BUTTONS_CREATE" + v4(),
             "MODAL": "MODAL_EMBED_" + v4(),
             "MODEL_TEXT": {
                 "TITLE": "MODAL_EMBED_TITLE",
