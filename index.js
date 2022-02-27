@@ -10,6 +10,7 @@ const Embed = require("./Util/Embed");
 const { Emojis } = require("./Util/EmojiManager");
 const mongoose = require("mongoose");
 const discordModals = require('discord-modals');
+const logger = require("./logger");
 const {
     TestGuildID: testGuildID,
     Color
@@ -58,6 +59,11 @@ const client = ClientBuilder.create({
         "MESSAGE"
     ]
 });
+
+client.on('ready', () => logger.info('The bot is online'));
+client.on('debug', m => logger.debug(m));
+client.on('warn', m => logger.warn(m));
+client.on('error', m => logger.error(m));
 
 discordModals(client);
 

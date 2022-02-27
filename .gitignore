@@ -105,3 +105,6 @@ dist
 
 # Config files (Don't forget this!)
 Config/config.json
+
+# Package
+package-lock.json
