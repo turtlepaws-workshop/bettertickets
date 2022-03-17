@@ -147,6 +147,8 @@ module.exports = {
                             }
                         ]
                     });
+
+                    process.exit()
                 }
                 client.on("interactionCreate", async i => {
                     if (canceled == true) return i.reply(`❌`);
