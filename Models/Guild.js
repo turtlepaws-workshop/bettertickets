@@ -19,7 +19,8 @@ const schema = new mongoose.Schema({
         URL: String,
         CustomIds: [String],
         Deleted: Boolean,
-        Disabled: Boolean
+        Disabled: Boolean,
+        Reasons: [String]
     }],
     LogChannel: String
 });

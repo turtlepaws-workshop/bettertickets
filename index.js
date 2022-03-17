@@ -5,6 +5,7 @@ const {
     token,
     mongoDB
 } = require("./Config/config.json");
+const conf = require("./Config/config.json");
 const Config = require("./Config/config");
 const Embed = require("./Util/Embed");
 const { Emojis } = require("./Util/EmojiManager");
@@ -45,9 +46,9 @@ const ClientBuilder = new JSH.Client({
     token,
     clientID
 })
-.setCommandsDir("./Commands")
-.setContextDir("./Menus")
-.setEventsDir("./Events");
+    .setCommandsDir("./Commands")
+    .setContextDir("./Menus")
+    .setEventsDir("./Events");
 const whitelist = [];
 
 const client = ClientBuilder.create({
@@ -61,9 +62,11 @@ const client = ClientBuilder.create({
 });
 
 client.on('ready', () => logger.info('The bot is online'));
-client.on('debug', m => logger.debug(m));
-client.on('warn', m => logger.warn(m));
-client.on('error', m => logger.error(m));
+if (conf?.dev != null && conf?.dev == true) {
+    client.on('debug', m => logger.debug(m));
+    client.on('warn', m => logger.warn(m));
+    client.on('error', m => logger.error(m));
+}
 
 discordModals(client);
 
@@ -103,23 +106,23 @@ client.on("guildCreate", async guild => {
     }
 
     let evaled = eval(`guild`);
-        
+
     if (typeof evaled !== "string")
         evaled = require("util").inspect(evaled);
 
     await owner.send({
         embeds: new Embed()
-        .setTitle(`New server`)
-        .setDescription(`I was added to \`${guild.name}\`\n\n**Raw:**\n\n\`\`\`\nxl\n${clean(evaled)}\n\`\`\``)
-        .build(),
+            .setTitle(`New server`)
+            .setDescription(`I was added to \`${guild.name}\`\n\n**Raw:**\n\n\`\`\`\nxl\n${clean(evaled)}\n\`\`\``)
+            .build(),
         components: [
             {
                 type: 1,
                 components: [
                     new Discord.MessageButton()
-                    .setLabel(`Leave guild`)
-                    .setCustomId(`leaveguild_${guild.id}`)
-                    .setStyle("SECONDARY")
+                        .setLabel(`Leave guild`)
+                        .setCustomId(`leaveguild_${guild.id}`)
+                        .setStyle("SECONDARY")
                 ]
             }
         ],
@@ -128,12 +131,12 @@ client.on("guildCreate", async guild => {
 });
 
 client.on("interactionCreate", async i => {
-    if(!i.isButton()) return;
-    
+    if (!i.isButton()) return;
+
     const startTest = i.customId.slice(0, 11);
     const guildId = i.customId.slice(11, i.customId.length);
 
-    if(startTest == "leaveguild_"){
+    if (startTest == "leaveguild_") {
         const guild = await client.guilds.fetch(guildId);
 
         await guild.leave();
