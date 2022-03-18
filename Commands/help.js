@@ -37,7 +37,7 @@ module.exports = {
                         new MessageButton()
                         .setStyle("LINK")
                         .setURL(URL.Invite)
-                        .setLabel(`Invite BetterTickets`)
+                        .setLabel(`Add to Server`)
                     ]
                 }
             ],
